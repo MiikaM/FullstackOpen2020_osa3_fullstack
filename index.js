@@ -3,6 +3,7 @@ const morgan = require('morgan')
 const cors = require('cors')
 
 const app = express()
+app.use(express.static('build'))
 app.use(express.json())
 app.use(cors())
 
@@ -73,12 +74,18 @@ app.delete('/api/persons/:id', (request, response) => {
     response.status(204).end()
 })
 
+
+
 const generateId = () => {
+
     const maxId = persons.length > 0
         ? Math.max(...persons.map(n => n.id))
         : 0
+
+
     return maxId + 1
 }
+
 
 app.post('/api/persons', (request, response) => {
     const body = request.body
@@ -97,16 +104,17 @@ app.post('/api/persons', (request, response) => {
         })
     }
 
-    const note = {
+    const person = {
         name: body.name,
         number: body.number,
-        id: generateId
+        id: generateId()
     }
 
-    persons = persons.concat(note)
+    persons = persons.concat(person)
 
-    response.json(note)
+    response.json(person)
 })
+
 
 const PORT = process.env.PORT || 3001
 app.listen(PORT, () => {
