@@ -1,3 +1,3 @@
 Link to the app ->
 
-https://puhehlinlluettelobackend.herokuapp.com/api/persons
+https://puhluettelofullstack.herokuapp.com/api/persons
