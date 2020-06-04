@@ -19,15 +19,17 @@ app.get('/', (req, res) => {
     res.send('<h1>Hello World!</h1>')
 })
 
-// app.get('/info', (req, res) => {
-//     const length = persons.length
-//     const date = new Date()
-//     console.log('length on', length)
-//     res.send(`<div>
-//     <p>Phonebook has info for ${length} people</p>
-//     <p>${date}</p>
-//     </div>`)
-// })
+app.get('/info', (req, res) => {
+    Person.countDocuments().then(length => {
+        const date = new Date()
+        res.send(`
+        <div>
+            <p>Phonebook has info for ${length} people</p>
+            <p>${date}</p>
+        </div>
+    `)
+    })
+})
 
 app.get('/api/persons', (request, response) => {
     Person.find({}).then(persons => {
@@ -55,22 +57,20 @@ app.delete('/api/persons/:id', (request, response, next) => {
 })
 
 
-app.post('/api/persons', (request, response) => {
+app.post('/api/persons', (request, response, next) => {
     const body = request.body
 
     if (!body.name || !body.number || body.name.length < 1 || body.number.length < 1) {
-        return response.status(400).json({
-            error: 'Name and number must be given'
-        })
+        return response.status(400).end()
     }
 
-    const personSame = Person.findById(body.name)
+    // const personSame = Person.findById(body.name)
 
-    if (personSame.length > 0) {
-        return response.status(400).json({
-            error: 'name must be unique'
-        })
-    }
+    // if (personSame.length > 0) {
+    //     return response.status(400).json({
+    //         error: 'name must be unique'
+    //     })
+    // }
 
     const person = new Person({
         name: body.name,
@@ -79,8 +79,25 @@ app.post('/api/persons', (request, response) => {
 
     person.save().then(savedPerson => {
         response.json(savedPerson)
-    })
+    }).catch(error => next(error))
 
+})
+
+app.put('/api/persons/:id', (request, response, next) => {
+    console.log('id on', request.params)
+    console.log('id on', request.body)
+
+    Person.findByIdAndUpdate(request.params.id,
+        {
+            $set: {
+                number: request.body.number
+            }
+        }
+    ).then(result => {
+        response.json(request.body)
+        response.status(204).end()
+    })
+        .catch(error => next(error))
 })
 
 const unknownEndpoint = (request, response) => {
