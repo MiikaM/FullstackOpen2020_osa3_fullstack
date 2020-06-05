@@ -9,16 +9,20 @@ app.use(express.static('build'))
 app.use(express.json())
 app.use(cors())
 
+
 morgan.token('contents', function (req) {
   return JSON.stringify(req.body)
 })
 
+//Logs the request info
 app.use(morgan(':method :url :status :res[content-length] - :response-time ms :contents'))
 
+//Front page without the frontend
 app.get('/', (req, res) => {
   res.send('<h1>Hello World!</h1>')
 })
 
+//info pages: counts the documents in the collection
 app.get('/info', (req, res) => {
   Person.countDocuments().then(length => {
     const date = new Date()
@@ -31,12 +35,14 @@ app.get('/info', (req, res) => {
   })
 })
 
+//Finds all the persons
 app.get('/api/persons', (request, response) => {
   Person.find({}).then(persons => {
     response.json(persons)
   })
 })
 
+//Shows the persons id page
 app.get('/api/persons/:id', (request, response, next) => {
   Person.findById(request.params.id).then(person => {
     if (person) {
@@ -47,6 +53,7 @@ app.get('/api/persons/:id', (request, response, next) => {
   }).catch(error => next(error))
 })
 
+//Allows for a deletion of a person based on ID
 app.delete('/api/persons/:id', (request, response, next) => {
   console.log('id on', request.param.id)
   Person.findByIdAndRemove(request.params.id)
@@ -56,7 +63,7 @@ app.delete('/api/persons/:id', (request, response, next) => {
     .catch(error => next(error))
 })
 
-
+//Posts inserted person and checks for validation
 app.post('/api/persons', (request, response, next) => {
   const body = request.body
 
@@ -75,6 +82,7 @@ app.post('/api/persons', (request, response, next) => {
 
 })
 
+//Updates persons number and checks for validation
 app.put('/api/persons/:id', (request, response, next) => {
   console.log('id on', request.params)
   console.log('id on', request.body)
@@ -92,13 +100,15 @@ app.put('/api/persons/:id', (request, response, next) => {
     .catch(error => next(error))
 })
 
+//If there is nothing inserted but trying to add
 const unknownEndpoint = (request, response) => {
   response.status(404).send({ error: 'Unknown person' })
 }
 
-// olemattomien osoitteiden käsittely
 app.use(unknownEndpoint)
 
+
+//Handles all errors
 const errorHandler = (error, request, response, next) => {
 
   if (error.name === 'CastError') {
